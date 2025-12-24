@@ -44,4 +44,4 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: mlflow-artifacts
-        path: ${{ env.MLFLOW_TRACKING_URI }}
+        path: ${{ env.MLFLOW_TRACKING_URI }}/*/*/artifacts/*
