@@ -1,29 +1,26 @@
 import pandas as pd
-from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.preprocessing import StandardScaler
 import mlflow
 import mlflow.sklearn
 
-# Enable autologging untuk sklearn
+# Enable autologging
 mlflow.sklearn.autolog()
 
-# Load dataset
+# Load preprocessed dataset
 data = pd.read_csv("foodspoiled_preprocessing.csv")
-X = data.drop("Status", axis=1)
-y = data["Status"]
+target = "Status"
+features = [col for col in data.columns if col != target]
 
-# Split dataset
+X = data[features]
+y = data[target]
+
+# Train-test split
 X_train, X_test, y_train, y_test = train_test_split(
-    X, y, test_size=0.3, random_state=42
+    X, y, test_size=0.3, random_state=42, stratify=y
 )
 
-with mlflow.start_run():
-    # Train model
-    model = RandomForestClassifier(n_estimators=100, max_depth=10, random_state=42)
-    model.fit(X_train, y_train)
-
-    # Predict & evaluate
-    preds = model.predict(X_test)
-    acc = accuracy_score(y_test, preds)
-    print(f"Accuracy: {acc}")
+# Fit model
+clf = RandomForestClassifier(n_estimators=100, random_state=42)
+clf.fit(X_train, y_train)
