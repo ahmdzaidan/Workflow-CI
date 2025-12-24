@@ -1,0 +1,14 @@
+name: food-spoilage-env
+
+channels:
+  - defaults
+  - conda-forge
+
+dependencies:
+  - python=3.10
+  - pip
+  - pip:
+      - pandas
+      - scikit-learn
+      - mlflow
+      - joblib
