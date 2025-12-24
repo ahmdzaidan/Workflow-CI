@@ -4,6 +4,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import StandardScaler
 import mlflow
 import mlflow.sklearn
+import joblib
 
 # Enable autologging
 mlflow.sklearn.autolog()
@@ -24,3 +25,6 @@ X_train, X_test, y_train, y_test = train_test_split(
 # Fit model
 clf = RandomForestClassifier(n_estimators=100, random_state=42)
 clf.fit(X_train, y_train)
+
+joblib.dump(clf, "model.pkl")
+mlflow.log_artifact("model.pkl", artifact_path="model_file")
