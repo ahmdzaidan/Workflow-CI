@@ -1,36 +1,47 @@
-name: MLflow CI Training
+name: MLflow CI - Retrain Model
 
 on:
-  workflow_dispatch:
   push:
-    branches: [main]
-    paths:
-      - "MLProject/**"
+    branches:
+      - main
+  workflow_dispatch:
 
 jobs:
-  train:
+  retrain-mlflow:
     runs-on: ubuntu-latest
+    env:
+      MLFLOW_TRACKING_URI: ${{ github.workspace }}/mlruns
 
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout repository
+      uses: actions/checkout@v4
 
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
         python-version: "3.10"
 
-    - name: Install MLflow
+    - name: Install dependencies
       run: |
-        pip install mlflow
+        python -m pip install --upgrade pip
+        pip install mlflow pandas scikit-learn joblib
 
-    - name: Run MLflow Project
+    - name: Retrain model via MLflow Project
+      working-directory: MLProject
       run: |
-        mlflow run MLProject \
-          -P n_estimators=200 \
-          -P max_depth=20
+        mlflow run . --env-manager=local
+
+    - name: Find latest MLflow run ID
+      id: find_run
+      run: |
+        latest_run=$(ls -1t "$MLFLOW_TRACKING_URI"/*/*/meta.yaml | head -n 1)
+        echo "Latest meta: $latest_run"
+        run_id=$(grep -E '^run_id:' "$latest_run" | awk '{print $2}')
+        echo "Run ID: $run_id"
+        echo "run_id=$run_id" >> $GITHUB_OUTPUT
 
     - name: Upload MLflow artifacts
       uses: actions/upload-artifact@v4
       with:
         name: mlflow-artifacts
-        path: mlruns/
+        path: ${{ env.MLFLOW_TRACKING_URI }}
